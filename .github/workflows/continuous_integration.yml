@@ -56,17 +56,17 @@ jobs:
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
-          path: ~/.m2
+          path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       
       - name: Build and Test with Maven
-        run: mvn clean install -DskipTests=false
+        run: mvn clean install -pl application -am -DskipTests=false -Dui.skip=true
 
       - name: Start ThingsBoard
         run: |
-          nohup mvn -pl application -am spring-boot:run &
-          sleep 60 # Wait for ThingsBoard to start
+          java -jar application/target/*.jar &
+          sleep 60  # Wait for ThingsBoard to start
       
       - name: Verify ThingsBoard is running
         run: |
