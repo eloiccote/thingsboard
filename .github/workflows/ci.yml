@@ -1,0 +1,31 @@
+name: TP1 CI - Build, Unit Tests, Run
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build + Unit tests
+        run: mvn -B clean test
+
+      - name: Start ThingsBoard (smoke)
+        run: |
+          mvn -B spring-boot:run &
+          sleep 60
+          echo "Started (waited 60s)"
