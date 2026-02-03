@@ -5,10 +5,16 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    env:
+      TZ: UTC
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
 
     services:
       postgres:
@@ -37,7 +43,9 @@ jobs:
           cache: maven
 
       - name: Build and Test with Maven
-        run: mvn -B clean install -pl application -am -DskipTests=false -Dui.skip=true
+        run: |
+          mvn -B clean install -pl application -am -DskipTests=false -Dui.skip=true \
+            -DargLine="-Duser.language=en -Duser.country=US -Duser.timezone=UTC"
 
       - name: Start ThingsBoard
         run: |
@@ -53,4 +61,27 @@ jobs:
       - name: Verify ThingsBoard is running
         run: |
           for i in {1..24}; do
-            if curl -fsS http://localhost:8080/ >/dev/nul
+            if curl -fsS http://localhost:8080/ >/dev/null; then
+              echo "OK: ThingsBoard up"
+              exit 0
+            fi
+            echo "Waiting... ($i)"
+            sleep 5
+          done
+          echo "FAILED to start. Last logs:"
+          tail -n 200 tb.log || true
+          exit 1
+
+      - name: Stop ThingsBoard
+        if: always()
+        run: |
+          if [ -f tb.pid ]; then
+            kill $(cat tb.pid) || true
+          fi
+
+      - name: Upload surefire reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/**'
