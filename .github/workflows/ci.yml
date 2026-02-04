@@ -52,6 +52,22 @@ jobs:
       - name: Build application jar (skip tests)
         run: |
           mvn -B -Dui.skip=true -DskipTests package -pl application -am
+      - name: Wait for Postgres and init DB
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+          for i in {1..30}; do
+            if PGPASSWORD=postgre psql -h localhost -U postgre -d postgres -c "SELECT 1" >/dev/null 2>&1; then
+              echo "Postgres is ready"
+              break
+            fi
+            echo "Waiting for Postgres... ($i)"
+            sleep 2
+          done
+
+          # ensure DB exists (idempotent)
+          PGPASSWORD=postgre psql -h localhost -U postgre -d postgres -c "CREATE DATABASE thingsboard;" || true
 
       - name: Start ThingsBoard (smoke)
         run: |
