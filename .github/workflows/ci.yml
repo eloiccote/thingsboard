@@ -10,8 +10,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    timeout-minutes: 20
     env:
       TZ: UTC
       LANG: en_US.UTF-8
@@ -43,19 +42,14 @@ jobs:
           java-version: "17"
           cache: maven
 
-      # IMPORTANT: build/install SNAPSHOT deps locally so script-api can resolve them
-      - name: Build deps for script-api (skip tests)
+      # 1) Unit tests (script-api) + build deps in one shot (fastest)
+      - name: Unit tests (script-api with deps)
         run: |
-            mvn -B -DskipTests -Dui.skip=true install -pl common/script/script-api -am
-
-      # 1) Unit tests (script-api)
-      - name: Unit tests (script-api)
-        run: |
-          mvn -B test -pl common/script/script-api \
+          mvn -B test -pl common/script/script-api -am -Dui.skip=true \
             -DtrimStackTrace=false -Dsurefire.printSummary=true -e
 
-      # 2) Build application (no tests)
-      - name: Build application
+      # 2) Build the server jar without UI and without re-running tests
+      - name: Build application jar (skip tests)
         run: |
           mvn -B -Dui.skip=true -DskipTests package -pl application -am
 
