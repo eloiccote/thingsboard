@@ -1,0 +1,127 @@
+name: CI Thingsboard
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      TZ: UTC
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: thingsboard
+          POSTGRES_USER: postgre
+          POSTGRES_PASSWORD: postgre
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgre -d thingsboard"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      # 1) Unit tests (script-api) + build deps in one shot
+      - name: Unit tests (script-api with deps)
+        run: |
+          mvn -B test -pl common/script/script-api -am -Dui.skip=true \
+            -DtrimStackTrace=false -Dsurefire.printSummary=true -e
+
+      # 2) Build the server jar without UI and without re-running tests
+      - name: Build application jar (skip tests)
+        run: |
+          mvn -B -Dui.skip=true -DskipTests package -pl application -am
+
+      # 3) Wait for Postgres and init DB without apt-get (faster)
+      - name: Wait for Postgres and init DB (no apt)
+        run: |
+          PG_CONTAINER="$(docker ps -q --filter ancestor=postgres:13 | head -n 1)"
+          if [ -z "$PG_CONTAINER" ]; then
+            echo "Postgres container not found"
+            docker ps
+            exit 1
+          fi
+          echo "Postgres container: $PG_CONTAINER"
+
+          for i in {1..30}; do
+            if docker exec "$PG_CONTAINER" pg_isready -U postgre -d thingsboard >/dev/null 2>&1; then
+              echo "Postgres is ready"
+              break
+            fi
+            echo "Waiting for Postgres... ($i)"
+            sleep 2
+          done
+
+          # ensure DB exists (idempotent)
+          docker exec "$PG_CONTAINER" psql -U postgre -d postgres -c "CREATE DATABASE thingsboard;" || true
+
+      - name: Start ThingsBoard (smoke)
+        run: |
+          JAR="$(ls application/target/*-boot.jar 2>/dev/null | head -n 1)"
+          echo "Using jar: $JAR"
+
+          if [ -z "$JAR" ]; then
+            echo "No *-boot.jar found in application/target"
+            ls -la application/target || true
+            exit 1
+          fi
+
+          nohup java -Xms256m -Xmx1024m -jar "$JAR" \
+            --spring.datasource.url=jdbc:postgresql://localhost:5432/thingsboard \
+            --spring.datasource.username=postgre \
+            --spring.datasource.password=postgre \
+            > tb.log 2>&1 &
+          echo $! > tb.pid
+
+      - name: Verify ThingsBoard is up (max 3 min)
+        run: |
+          for i in {1..36}; do
+            if curl -fsS --max-time 2 http://localhost:8080/ >/dev/null; then
+              echo "OK: HTTP up"
+              exit 0
+            fi
+            echo "Waiting HTTP... ($i)"
+            sleep 5
+          done
+
+          echo "FAILED to start. Last logs:"
+          tail -n 300 tb.log || true
+          echo "DB-related lines (if any):"
+          grep -iE "psql|postgres|hikari|jdbc|hibernate|SQLState|PSQLException" -n tb.log | tail -n 120 || true
+          exit 1
+
+      - name: Stop ThingsBoard
+        if: always()
+        run: |
+          if [ -f tb.pid ]; then
+            kill $(cat tb.pid) || true
+          fi
+
+      - name: Upload surefire reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/**'

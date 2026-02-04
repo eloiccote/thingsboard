@@ -601,13 +601,23 @@ public class TbDate implements Serializable, Cloneable {
         }
     }
     private static Instant getInstant_RFC_1123(String s) {
-        // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 GMT"
-        // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 GMT-02:00"
-        // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 -0200"
-        DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
+    // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 GMT"
+    // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 GMT-02:00"
+    // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 -0200"
+    DateTimeFormatter rfc1123 = DateTimeFormatter.RFC_1123_DATE_TIME;
+
+    try {
+        return Instant.from(rfc1123.parse(s));
+    } catch (DateTimeParseException ex) {
+        // Fallback for values without timezone, e.g. "Sat, 3 Jun 2023 11:05:30"
         try {
-            return Instant.from(formatter.parse(s));
-        } catch (DateTimeParseException ex) {
+            DateTimeFormatter noZone = new DateTimeFormatterBuilder()
+                    .parseCaseInsensitive()
+                    .appendPattern("EEE, d MMM uuuu HH:mm:ss")
+                    .toFormatter(Locale.ENGLISH)
+                    .withZone(ZoneOffset.UTC);
+            return Instant.from(noZone.parse(s.trim()));
+        } catch (DateTimeParseException ex2) {
             try {
                 return getInstantWithLocalZoneOffsetId_RFC_1123(s);
             } catch (final DateTimeParseException e) {
@@ -615,6 +625,8 @@ public class TbDate implements Serializable, Cloneable {
             }
         }
     }
+}
+
     private static Instant getInstantWithLocalZoneOffsetId_RFC_1123(String value) {
         String s = value.trim() + " GMT";
         Instant instant = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(s));
