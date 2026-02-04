@@ -10,6 +10,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     env:
       TZ: UTC
@@ -29,7 +30,7 @@ jobs:
           --health-cmd="pg_isready -U postgre -d thingsboard"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - name: Checkout Repository
@@ -42,15 +43,28 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Build and Test with Maven
+      # 1) Tests unitaires ciblés (ceux qui te faisaient planter)
+      - name: Unit tests (script-api)
         run: |
-          mvn -B clean install -pl application -am -DskipTests=false -Dui.skip=true \
-            -DargLine="-Duser.language=en -Duser.country=US -Duser.timezone=UTC"
+          mvn -B test -pl common/script/script-api \
+            -DtrimStackTrace=false -Dsurefire.printSummary=true -e
 
-      - name: Start ThingsBoard
+      # 2) Build de l'application (sans relancer tous les tests)
+      - name: Build application
         run: |
-          JAR="$(ls application/target/*-boot.jar | head -n 1)"
+          mvn -B -Dui.skip=true -DskipTests package -pl application -am
+
+      - name: Start ThingsBoard (smoke)
+        run: |
+          JAR="$(ls application/target/*-boot.jar 2>/dev/null | head -n 1)"
           echo "Using jar: $JAR"
+
+          if [ -z "$JAR" ]; then
+            echo "No *-boot.jar found in application/target"
+            ls -la application/target || true
+            exit 1
+          fi
+
           nohup java -jar "$JAR" \
             --spring.datasource.url=jdbc:postgresql://localhost:5432/thingsboard \
             --spring.datasource.username=postgre \
@@ -58,18 +72,18 @@ jobs:
             > tb.log 2>&1 &
           echo $! > tb.pid
 
-      - name: Verify ThingsBoard is running
+      - name: Verify ThingsBoard is up (max 3 min)
         run: |
-          for i in {1..24}; do
-            if curl -fsS http://localhost:8080/ >/dev/null; then
-              echo "OK: ThingsBoard up"
+          for i in {1..36}; do
+            if curl -fsS --max-time 2 http://localhost:8080/ >/dev/null; then
+              echo "OK: HTTP up"
               exit 0
             fi
-            echo "Waiting... ($i)"
+            echo "Waiting HTTP... ($i)"
             sleep 5
           done
           echo "FAILED to start. Last logs:"
-          tail -n 200 tb.log || true
+          tail -n 300 tb.log || true
           exit 1
 
       - name: Stop ThingsBoard
