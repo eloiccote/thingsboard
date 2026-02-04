@@ -43,13 +43,18 @@ jobs:
           java-version: "17"
           cache: maven
 
-      # 1) Tests unitaires ciblés (ceux qui te faisaient planter)
+      # IMPORTANT: build/install SNAPSHOT deps locally so script-api can resolve them
+      - name: Install dependencies (skip tests)
+        run: |
+          mvn -B -DskipTests -Dui.skip=true install
+
+      # 1) Unit tests (script-api)
       - name: Unit tests (script-api)
         run: |
           mvn -B test -pl common/script/script-api \
             -DtrimStackTrace=false -Dsurefire.printSummary=true -e
 
-      # 2) Build de l'application (sans relancer tous les tests)
+      # 2) Build application (no tests)
       - name: Build application
         run: |
           mvn -B -Dui.skip=true -DskipTests package -pl application -am
