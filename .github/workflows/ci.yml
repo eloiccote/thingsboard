@@ -44,9 +44,9 @@ jobs:
           cache: maven
 
       # IMPORTANT: build/install SNAPSHOT deps locally so script-api can resolve them
-      - name: Install dependencies (skip tests)
+      - name: Build deps for script-api (skip tests)
         run: |
-          mvn -B -DskipTests -Dui.skip=true install
+            mvn -B -DskipTests -Dui.skip=true install -pl common/script/script-api -am
 
       # 1) Unit tests (script-api)
       - name: Unit tests (script-api)
