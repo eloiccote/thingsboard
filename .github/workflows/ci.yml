@@ -11,6 +11,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     env:
       TZ: UTC
       LANG: en_US.UTF-8
@@ -42,7 +43,7 @@ jobs:
           java-version: "17"
           cache: maven
 
-      # 1) Unit tests (script-api) + build deps in one shot (fastest)
+      # 1) Unit tests (script-api) + build deps in one shot
       - name: Unit tests (script-api with deps)
         run: |
           mvn -B test -pl common/script/script-api -am -Dui.skip=true \
@@ -52,13 +53,20 @@ jobs:
       - name: Build application jar (skip tests)
         run: |
           mvn -B -Dui.skip=true -DskipTests package -pl application -am
-      - name: Wait for Postgres and init DB
+
+      # 3) Wait for Postgres and init DB without apt-get (faster)
+      - name: Wait for Postgres and init DB (no apt)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          PG_CONTAINER="$(docker ps -q --filter ancestor=postgres:13 | head -n 1)"
+          if [ -z "$PG_CONTAINER" ]; then
+            echo "Postgres container not found"
+            docker ps
+            exit 1
+          fi
+          echo "Postgres container: $PG_CONTAINER"
 
           for i in {1..30}; do
-            if PGPASSWORD=postgre psql -h localhost -U postgre -d postgres -c "SELECT 1" >/dev/null 2>&1; then
+            if docker exec "$PG_CONTAINER" pg_isready -U postgre -d thingsboard >/dev/null 2>&1; then
               echo "Postgres is ready"
               break
             fi
@@ -67,7 +75,7 @@ jobs:
           done
 
           # ensure DB exists (idempotent)
-          PGPASSWORD=postgre psql -h localhost -U postgre -d postgres -c "CREATE DATABASE thingsboard;" || true
+          docker exec "$PG_CONTAINER" psql -U postgre -d postgres -c "CREATE DATABASE thingsboard;" || true
 
       - name: Start ThingsBoard (smoke)
         run: |
@@ -80,7 +88,7 @@ jobs:
             exit 1
           fi
 
-          nohup java -jar "$JAR" \
+          nohup java -Xms256m -Xmx1024m -jar "$JAR" \
             --spring.datasource.url=jdbc:postgresql://localhost:5432/thingsboard \
             --spring.datasource.username=postgre \
             --spring.datasource.password=postgre \
@@ -97,8 +105,11 @@ jobs:
             echo "Waiting HTTP... ($i)"
             sleep 5
           done
+
           echo "FAILED to start. Last logs:"
           tail -n 300 tb.log || true
+          echo "DB-related lines (if any):"
+          grep -iE "psql|postgres|hikari|jdbc|hibernate|SQLState|PSQLException" -n tb.log | tail -n 120 || true
           exit 1
 
       - name: Stop ThingsBoard
