@@ -54,30 +54,31 @@ jobs:
       
       - name: Compile and Install Dependencies
         run: >
-          mvn clean install
-          -Dfrontend.skip=true
-          -DskipTests=true
+          mvn clean install 
+          -DskipTests=true 
           -DskipITs=true 
+          -Dfrontend.skip=true 
+          -Dskip.npm=true 
+          -Dskip.yarn=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
-          -Dskip.npm=true 
           -T 1C 
-          -B
+          -B 
+          -fae
       
       - name: Run Unit Test with Maven
         run: >
           mvn test 
-          -pl common/data
-          -am
-          -Dfrontend.skip=true
-          -Dtest=!**/*IT
-          -Dtest=!**/*IntegrationTest
+          -pl common/data 
+          -am 
+          -Dtest=!**/*IT 
+          -Dtest=!**/*IntegrationTest 
           -DskipITs=true 
+          -Dfrontend.skip=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
-          -Dskip.npm=true 
           -B
 
       - name: Database Setup
