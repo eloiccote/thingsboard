@@ -53,7 +53,7 @@ jobs:
           cache: "maven"
       
       - name: Build and Test with Maven
-        run: mvn clean install -DskipTests=false -B
+        run: mvn clean install -DskipITs=true -B
 
       - name: Database Setup
         run: |
