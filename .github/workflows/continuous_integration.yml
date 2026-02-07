@@ -52,8 +52,8 @@ jobs:
           distribution: 'temurin'
           cache: "maven"
       
-      -name: Compile and Install Dependencies
-       run: >
+      - name: Compile and Install Dependencies
+        run: >
           mvn clean install 
           -DskipTests=true 
           -DskipITs=true 
