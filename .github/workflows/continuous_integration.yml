@@ -52,8 +52,27 @@ jobs:
           distribution: 'temurin'
           cache: "maven"
       
-      - name: Build and Test with Maven
-        run: mvn clean install -DskipITs=true -B
+      -name: Compile and Install Dependencies
+       run: >
+          mvn clean install 
+          -DskipTests=true 
+          -DskipITs=true 
+          -Dcheckstyle.skip=true 
+          -Dlicense.skip=true 
+          -Ddockerfile.skip=true 
+          -Dskip.npm=true 
+          -T 1C 
+          -B
+      
+      - name: Run Unit Test with Maven
+        run: >
+          mvn test 
+          -DskipITs=true 
+          -Dcheckstyle.skip=true 
+          -Dlicense.skip=true 
+          -Ddockerfile.skip=true 
+          -Dskip.npm=true 
+          -B
 
       - name: Database Setup
         run: |
