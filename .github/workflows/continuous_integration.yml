@@ -67,6 +67,10 @@ jobs:
       - name: Run Unit Test with Maven
         run: >
           mvn test 
+          -pl common
+          -am
+          -Dtest=!**/*IT
+          -Dtest=!**/*IntegrationTest
           -DskipITs=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
