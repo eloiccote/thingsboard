@@ -55,6 +55,7 @@ jobs:
       - name: Compile and Install Dependencies
         run: >
           mvn clean install 
+          -Dfrontend.skip=true
           -DskipTests=true 
           -DskipITs=true 
           -Dcheckstyle.skip=true 
@@ -71,7 +72,8 @@ jobs:
           -am
           -Dtest=!**/*IT
           -Dtest=!**/*IntegrationTest
-          -DskipITs=true 
+          -DskipITs=true
+          -Dfrontend.skip=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
