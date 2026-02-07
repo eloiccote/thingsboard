@@ -55,6 +55,7 @@ jobs:
       - name: Compile and Install Dependencies
         run: >
           mvn clean install
+          -Dfrontend.skip=true
           -DskipTests=true
           -DskipITs=true 
           -Dcheckstyle.skip=true 
@@ -69,6 +70,7 @@ jobs:
           mvn test 
           -pl common/data
           -am
+          -Dfrontend.skip=true
           -Dtest=!**/*IT
           -Dtest=!**/*IntegrationTest
           -DskipITs=true 
