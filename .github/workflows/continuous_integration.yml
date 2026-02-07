@@ -57,15 +57,10 @@ jobs:
           mvn clean install 
           -DskipTests=true 
           -DskipITs=true 
-          -Dfrontend.skip=true 
-          -Dskip.npm=true 
-          -Dskip.yarn=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
-          -T 1C 
-          -B 
-          -fae
+          -B
       
       - name: Run Unit Test with Maven
         run: >
@@ -75,7 +70,6 @@ jobs:
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
           -DskipITs=true 
-          -Dfrontend.skip=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
