@@ -60,15 +60,14 @@ jobs:
           -DskipITs=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
-          -Ddockerfile.skip=true 
-          -Dskip.npm=true 
+          -Ddockerfile.skip=true
           -T 1C 
           -B
       
       - name: Run Unit Test with Maven
         run: >
           mvn test 
-          -pl common
+          -pl common/data
           -am
           -Dtest=!**/*IT
           -Dtest=!**/*IntegrationTest
@@ -76,8 +75,7 @@ jobs:
           -Dfrontend.skip=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
-          -Ddockerfile.skip=true 
-          -Dskip.npm=true 
+          -Ddockerfile.skip=true
           -B
 
       - name: Database Setup
