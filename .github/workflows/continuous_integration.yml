@@ -52,14 +52,16 @@ jobs:
           distribution: 'temurin'
           cache: "maven"
       
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
       - name: Compile and Install Dependencies
         run: >
           mvn clean install 
           -DskipTests=true 
           -DskipITs=true 
-          -Dfrontend.skip=true 
-          -Dskip.npm=true 
-          -Dskip.yarn=true 
           -Dassembly.skipAssembly=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
@@ -67,7 +69,7 @@ jobs:
           -B
           -fae
       
-      - name: Run Unit Test with Maven
+      - name: Run Unit Test with Maven (Backend Only)
         run: >
           mvn test 
           -pl common/data 
@@ -105,17 +107,24 @@ jobs:
           sudo mkdir -p /var/log/thingsboard
           sudo chown -R runner:runner /var/log/thingsboard
           sudo chmod 777 /var/log/thingsboard
+          
           java -jar application/target/thingsboard-*.jar > start.log 2>&1 &
           PID=$!
-          for i in {1..30}; do
+          
+          echo "Waiting for ThingsBoard to start..."
+          for i in {1..40}; do
             sleep 10
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login || echo "000")
+            
             if [ "$STATUS" == "200" ]; then
+              echo "SUCCESS: ThingsBoard is running."
               kill $PID
               exit 0
             fi
+            echo "$i/40 : Statut $STATUS - ThingsBoard is not ready yet."
           done
-          cat /var/log/thingsboard/thingsboard.log || true
-          cat start.log || true
+          
+          echo "FAILURE: ThingsBoard did not start within the expected time."
+          cat start.log
           kill $PID
           exit 1
