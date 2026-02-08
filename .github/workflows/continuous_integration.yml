@@ -26,22 +26,14 @@ jobs:
   build-and-test:
     runs-on: self-hosted
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: thingsboard
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
+      - name: Start PostgreSQL Service
+        run: |
+          docker rm -f thingsboard-db-test || echo "No existing container to remove."
+          docker run -d --name thingsboard-db-test -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=thingsboard postgres:15
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 10
+          
       - name: Checkout Repository
         uses: actions/checkout@v4
 
