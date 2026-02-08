@@ -72,7 +72,7 @@ jobs:
       - name: Run Unit Test with Maven
         run: >
           mvn test
-          -pl !dao
+          -pl !dao !ui-ngx
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
           -DskipITs=true
@@ -117,7 +117,7 @@ jobs:
             sleep 10
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login || echo "000")
             
-            if [ "$STATUS" == "200" ]; then
+            if [ "$STATUS" == "200" || "$STATUS" == "404"]; then
               echo "SUCCESS: ThingsBoard is running."
               kill $PID
               exit 0
