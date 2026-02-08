@@ -31,9 +31,8 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: thingsboard
-          # CHANGEMENT ICI : On utilise l'utilisateur standard "postgres"
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: thingsboard
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         options: >-
@@ -84,7 +83,6 @@ jobs:
       - name: Database Setup
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
-          # CHANGEMENT ICI : On se connecte en tant que "postgres"
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
         run: |
@@ -98,7 +96,6 @@ jobs:
       - name: Starting and Verify ThingsBoard is running
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
-          # CHANGEMENT ICI : On se connecte en tant que "postgres"
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
           TB_QUEUE_TYPE: in-memory
