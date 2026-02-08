@@ -85,7 +85,7 @@ jobs:
           sudo mkdir -p /var/log/thingsboard
           sudo chown -R runner:runner /var/log/thingsboard
           sudo chmod 777 /var/log/thingsboard
-          
+
           chmod +x application/target/bin/install/install_dev_db.sh
           cd application/target/bin/install
           ./install_dev_db.sh
@@ -95,23 +95,31 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
           SPRING_DATASOURCE_USERNAME: thingsboard
           SPRING_DATASOURCE_PASSWORD: thingsboard
+          
+          TB_QUEUE_TYPE: in-memory
+          TB_SERVICE_TYPE: monolith
+          
+          JAVA_TOOL_OPTIONS: "-Xmx3072m" 
         run: |
-          echo "Démarrage de ThingsBoard..."
+          echo "Démarrage..."
           java -jar application/target/thingsboard-*.jar &
           PID=$!
           
-          echo "Attente de disponibilité (Health Check)..."
-          for i in {1..18}; do
+          echo "Attente de démarrage (peut prendre 2-3 minutes)..."
+          for i in {1..30}; do
             sleep 10
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login)
+            # On vérifie si le port 8080 répond (code HTTP)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login || echo "000")
+            
             if [ "$STATUS" == "200" ]; then
-              echo "SUCCÈS : ThingsBoard a démarré et répond !"
+              echo "SUCCÈS : ThingsBoard est en vie et répond 200 OK !"
               kill $PID
               exit 0
             fi
-            echo "Tentative $i/18 : Statut $STATUS - En attente..."
+            echo "Tentative $i/30 : Statut $STATUS - En attente..."
           done
           
-          echo "ÉCHEC : Timeout au démarrage."
+          echo "Timeout - Logs de l'application :"
+          cat /var/log/thingsboard/thingsboard.log || echo "Pas de log trouvé."
           kill $PID
           exit 1
