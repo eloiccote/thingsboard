@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="TP1-Maintenability-Complexity"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+           http://pmd.sourceforge.net/ruleset/2.0.0
+           https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+  <description>
+    Règles PMD pour évaluer la maintenabilité du code Java
+    via la complexité cyclomatique.
+  </description>
+
+  <rule ref="category/java/design.xml/CyclomaticComplexity">
+    <properties>
+      <!-- Seuil de complexité cyclomatique -->
+      <property name="reportLevel" value="10"/>
+    </properties>
+  </rule>
+
+</ruleset>
