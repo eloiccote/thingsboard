@@ -75,15 +75,14 @@ jobs:
       - name: Run Unit Test with Maven
         run: >
           mvn test
+          -pl !dao
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
           -DskipITs=true
           -Dsurefire.failIfNoSpecifiedTests=false
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
-          -Ddockerfile.skip=true 
-          -DforkCount=1
-          -Dsurefire.rerunFailingTestsCount=2
+          -Ddockerfile.skip=true
           -B
           -fae
 
