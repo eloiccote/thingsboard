@@ -77,8 +77,8 @@ jobs:
 
       - name: Database Setup
         run: |
-          find . -name "install_dev_db.sh"
-          cd application/target/bin /install
+          chmod +x application/target/bin/install/install_dev_db.sh
+          cd application/target/bin/install
           ./install_dev_db.sh
       
       - name: Starting and Verify ThingsBoard is running
