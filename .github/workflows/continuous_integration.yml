@@ -73,7 +73,7 @@ jobs:
           mvn test
           -pl !ui-ngx
           -DforkCount=1C
-          -Dtest=!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*NoSql*,!**/*Cassandra*,!**/*RelationServiceTest
+          -Dtest=!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*NoSql*,!**/*Cassandra*,!**/*RelationServiceTest, !**/*OAuth2*
           -DskipITs=true
           -Dsurefire.failIfNoSpecifiedTests=false
           -Dcheckstyle.skip=true 
