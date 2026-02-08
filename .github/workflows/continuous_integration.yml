@@ -54,7 +54,8 @@ jobs:
       
       - name: Compile and Install Dependencies
         run: >
-          mvn clean install 
+          mvn clean install
+          -T 1C
           -DskipTests=true 
           -DskipITs=true
           -Dfrontend.skip=true
@@ -69,6 +70,7 @@ jobs:
         run: >
           mvn test
           -pl !ui-ngx
+          -DforkCount=1C
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
           -DskipITs=true
