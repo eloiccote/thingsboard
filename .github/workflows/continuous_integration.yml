@@ -25,6 +25,9 @@ on:
 jobs:
   build-and-test:
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Start PostgreSQL Service
@@ -33,7 +36,7 @@ jobs:
           docker run -d --name thingsboard-db-test -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=thingsboard postgres:15
           echo "Waiting for PostgreSQL to be ready..."
           sleep 10
-          
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
