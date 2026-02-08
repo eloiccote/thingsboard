@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name:  ThingsBoard CI Pipeline
+name: ThingsBoard CI Pipeline
 
 on:
   push:
@@ -57,10 +57,15 @@ jobs:
           mvn clean install 
           -DskipTests=true 
           -DskipITs=true 
+          -Dfrontend.skip=true 
+          -Dskip.npm=true 
+          -Dskip.yarn=true 
+          -Dassembly.skipAssembly=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
           -B
+          -fae
       
       - name: Run Unit Test with Maven
         run: >
@@ -81,11 +86,9 @@ jobs:
           SPRING_DATASOURCE_USERNAME: thingsboard
           SPRING_DATASOURCE_PASSWORD: thingsboard
         run: |
-          echo "Création du dossier de logs..."
           sudo mkdir -p /var/log/thingsboard
           sudo chown -R runner:runner /var/log/thingsboard
           sudo chmod 777 /var/log/thingsboard
-
           chmod +x application/target/bin/install/install_dev_db.sh
           cd application/target/bin/install
           ./install_dev_db.sh
@@ -95,31 +98,24 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
           SPRING_DATASOURCE_USERNAME: thingsboard
           SPRING_DATASOURCE_PASSWORD: thingsboard
-          
           TB_QUEUE_TYPE: in-memory
           TB_SERVICE_TYPE: monolith
-          
           JAVA_TOOL_OPTIONS: "-Xmx3072m" 
         run: |
-          echo "Démarrage..."
-          java -jar application/target/thingsboard-*.jar &
+          sudo mkdir -p /var/log/thingsboard
+          sudo chown -R runner:runner /var/log/thingsboard
+          sudo chmod 777 /var/log/thingsboard
+          java -jar application/target/thingsboard-*.jar > start.log 2>&1 &
           PID=$!
-          
-          echo "Attente de démarrage (peut prendre 2-3 minutes)..."
           for i in {1..30}; do
             sleep 10
-            # On vérifie si le port 8080 répond (code HTTP)
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login || echo "000")
-            
             if [ "$STATUS" == "200" ]; then
-              echo "SUCCÈS : ThingsBoard est en vie et répond 200 OK !"
               kill $PID
               exit 0
             fi
-            echo "Tentative $i/30 : Statut $STATUS - En attente..."
           done
-          
-          echo "Timeout - Logs de l'application :"
-          cat /var/log/thingsboard/thingsboard.log || echo "Pas de log trouvé."
+          cat /var/log/thingsboard/thingsboard.log || true
+          cat start.log || true
           kill $PID
           exit 1
