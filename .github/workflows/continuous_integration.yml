@@ -56,6 +56,8 @@ jobs:
         run: >
           mvn clean install
           -T 1C
+          -Dskip.js.executor=true
+          -Dyarn.skip=true
           -DskipTests=true 
           -DskipITs=true
           -Dfrontend.skip=true
