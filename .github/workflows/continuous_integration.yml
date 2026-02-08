@@ -69,12 +69,13 @@ jobs:
           -B
           -fae
       
-      - name: Run Unit Test with Maven (Backend Only)
+      - name: Run Unit Test with Maven
         run: >
           mvn test
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
-          -DskipITs=true 
+          -DskipITs=true
+          -Dsurefire.failIfNoSpecifiedTests=false
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
