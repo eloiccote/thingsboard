@@ -26,9 +26,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    env:
-      MAVEN_OPTS: "-Xmx2048m"
-
     services:
       postgres:
         image: postgres:15
