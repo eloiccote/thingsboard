@@ -31,7 +31,8 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_DB: thingsboard
-          POSTGRES_USER: thingsboard
+          # CHANGEMENT ICI : On utilise l'utilisateur standard "postgres"
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: thingsboard
         ports:
           - 5432:5432
@@ -83,8 +84,9 @@ jobs:
       - name: Database Setup
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
-          SPRING_DATASOURCE_USERNAME: thingsboard
-          SPRING_DATASOURCE_PASSWORD: thingsboard
+          # CHANGEMENT ICI : On se connecte en tant que "postgres"
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
         run: |
           sudo mkdir -p /var/log/thingsboard
           sudo chown -R runner:runner /var/log/thingsboard
@@ -96,8 +98,9 @@ jobs:
       - name: Starting and Verify ThingsBoard is running
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
-          SPRING_DATASOURCE_USERNAME: thingsboard
-          SPRING_DATASOURCE_PASSWORD: thingsboard
+          # CHANGEMENT ICI : On se connecte en tant que "postgres"
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
           TB_QUEUE_TYPE: in-memory
           TB_SERVICE_TYPE: monolith
           JAVA_TOOL_OPTIONS: "-Xmx3072m" 
