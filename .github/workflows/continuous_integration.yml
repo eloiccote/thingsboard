@@ -24,7 +24,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     services:
       postgres:
@@ -61,7 +61,8 @@ jobs:
         run: >
           mvn clean install 
           -DskipTests=true 
-          -DskipITs=true 
+          -DskipITs=true
+          -Dfrontend.skip=true
           -Dassembly.skipAssembly=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
@@ -72,7 +73,7 @@ jobs:
       - name: Run Unit Test with Maven
         run: >
           mvn test
-          -pl "!dao, !ui-ngx"
+          -pl !ui-ngx
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
           -DskipITs=true
@@ -103,7 +104,7 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: postgres
           TB_QUEUE_TYPE: in-memory
           TB_SERVICE_TYPE: monolith
-          JAVA_TOOL_OPTIONS: "-Xmx3072m" 
+          JAVA_TOOL_OPTIONS: "-Xmx4096m" 
         run: |
           sudo mkdir -p /var/log/thingsboard
           sudo chown -R runner:runner /var/log/thingsboard
