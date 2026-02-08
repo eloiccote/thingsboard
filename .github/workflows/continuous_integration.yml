@@ -81,6 +81,11 @@ jobs:
           SPRING_DATASOURCE_USERNAME: thingsboard
           SPRING_DATASOURCE_PASSWORD: thingsboard
         run: |
+          echo "Création du dossier de logs..."
+          sudo mkdir -p /var/log/thingsboard
+          sudo chown -R runner:runner /var/log/thingsboard
+          sudo chmod 777 /var/log/thingsboard
+          
           chmod +x application/target/bin/install/install_dev_db.sh
           cd application/target/bin/install
           ./install_dev_db.sh
