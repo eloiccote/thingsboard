@@ -71,9 +71,7 @@ jobs:
       
       - name: Run Unit Test with Maven (Backend Only)
         run: >
-          mvn test 
-          -pl common/data 
-          -am 
+          mvn test
           -Dtest=!**/*IT 
           -Dtest=!**/*IntegrationTest 
           -DskipITs=true 
@@ -81,6 +79,7 @@ jobs:
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
           -B
+          -fae
 
       - name: Database Setup
         env:
