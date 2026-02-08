@@ -76,30 +76,37 @@ jobs:
           -B
 
       - name: Database Setup
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
+          SPRING_DATASOURCE_USERNAME: thingsboard
+          SPRING_DATASOURCE_PASSWORD: thingsboard
         run: |
           chmod +x application/target/bin/install/install_dev_db.sh
           cd application/target/bin/install
           ./install_dev_db.sh
       
       - name: Starting and Verify ThingsBoard is running
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
+          SPRING_DATASOURCE_USERNAME: thingsboard
+          SPRING_DATASOURCE_PASSWORD: thingsboard
         run: |
           echo "Démarrage de ThingsBoard..."
           java -jar application/target/thingsboard-*.jar &
           PID=$!
-
-          echo "Attente de la disponibilité (Health Check)..."
-          for i in {1..30}; do
+          
+          echo "Attente de disponibilité (Health Check)..."
+          for i in {1..18}; do
             sleep 10
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login)
             if [ "$STATUS" == "200" ]; then
-              echo "SUCCÈS : ThingsBoard est en ligne !"
+              echo "SUCCÈS : ThingsBoard a démarré et répond !"
               kill $PID
               exit 0
             fi
-            echo "Tentative $i/30 : Statut $STATUS - En attente..."
+            echo "Tentative $i/18 : Statut $STATUS - En attente..."
           done
           
-          echo "ÉCHEC : Le serveur n'a pas démarré à temps."
-          cat logs/thingsboard.log || echo "Pas de log trouvé"
+          echo "ÉCHEC : Timeout au démarrage."
           kill $PID
           exit 1
