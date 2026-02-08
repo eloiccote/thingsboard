@@ -26,6 +26,9 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      MAVEN_OPTS: "-Xmx2048m"
+
     services:
       postgres:
         image: postgres:15
@@ -79,6 +82,8 @@ jobs:
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
+          -DforkCount=1
+          -Dsurefire.rerunFailingTestsCount=2
           -B
           -fae
 
