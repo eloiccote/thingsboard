@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: ThingsBoard CI Pipeline
+name: ThingsBoard CI/CD Pipeline
 
 on:
   push:
@@ -23,7 +23,7 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-and-test:
+  ci-build-and-test:
     runs-on: self-hosted
     defaults:
       run:
@@ -72,7 +72,6 @@ jobs:
         run: >
           mvn test 
           -pl "application,common/data,common/message,common/transport/mqtt,common/transport/http,common/transport/coap,common/util,common/stats,common/cluster-api,common/cache"
-          -am
           -DforkCount=1C
           -Dtest="!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*E2E*"
           -DskipITs=true 
@@ -83,49 +82,76 @@ jobs:
           -B
           -fae
 
-      - name: Database Setup
+      - name: Stop PostgreSQL
+        if: always()
+        run: docker rm -f thingsboard-db-test || echo "No existing container to remove."
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: thingsboard-build
+          path: application/target/
+          retention-days: 5
+  
+  cd-deploy:
+    needs: ci-build-and-test
+    runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: thingsboard-build
+          path: application/target/
+
+      - name: Start PostgreSQL
+        run: |
+          docker rm -f thingsboard-db-test || echo "No existing container to remove."
+          docker run -d --name thingsboard-db-test -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=thingsboard postgres:15
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 10
+      
+      - name: Install Database Schema
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
         run: |
-          sudo mkdir -p /var/log/thingsboard
-          sudo chown -R runner:runner /var/log/thingsboard
-          sudo chmod 777 /var/log/thingsboard
-          chmod +x application/target/bin/install/install_dev_db.sh
+          chmod +x application/target/bin/install/install-dev-db.sh
           cd application/target/bin/install
-          ./install_dev_db.sh
+          ./install-dev-db.sh
       
-      - name: Starting and Verify ThingsBoard is running
+      - name: Deploy ThingsBoard
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/thingsboard
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
           TB_QUEUE_TYPE: in-memory
-          TB_SERVICE_TYPE: monolith
-          JAVA_TOOL_OPTIONS: "-Xmx4096m" 
+          TB_ServiCE_TYPE: monolith
+          JAVA_TOOL_OPTIONS: "-Xmx4096m"
         run: |
-          sudo mkdir -p /var/log/thingsboard
-          sudo chown -R runner:runner /var/log/thingsboard
-          sudo chmod 777 /var/log/thingsboard
-          
-          java -jar application/target/thingsboard-*.jar > start.log 2>&1 &
+          java -jar application/target/thingsboard-*.jar & > start.log 2>&1 &
           PID=$!
-          
           echo "Waiting for ThingsBoard to start..."
-          for i in {1..40}; do
+          for i in {1..30}; do
             sleep 10
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login || echo "000")
-            
-            if [ "$STATUS" == "200" || "$STATUS" == "404"]; then
-              echo "SUCCESS: ThingsBoard is running."
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/login || echo "000")
+
+            if [ "$STATUS" == "200" ] || [ "$STATUS" == "404" ]; then
+              echo "ThingsBoard started successfully."
               kill $PID
+              docker rm -f thingsboard-db-test || echo "No existing container to remove."
               exit 0
+            else
+              echo "Waiting for ThingsBoard to start... (Attempt: $i)"
             fi
-            echo "$i/40 : Statut $STATUS - ThingsBoard is not ready yet."
           done
-          
-          echo "FAILURE: ThingsBoard did not start within the expected time."
+
+          echo "ThingsBoard failed to start within the expected time."
           cat start.log
           kill $PID
+          docker rm -f thingsboard-db-test || echo "No existing container to remove."
           exit 1
