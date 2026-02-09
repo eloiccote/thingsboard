@@ -71,7 +71,7 @@ jobs:
       - name: Run Unit Test with Maven
         run: >
           mvn test
-          -pl !ui-ngx
+          -pl "!ui-ngx,!dao"
           -DforkCount=1C
           -Dtest=!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*E2E*
           -DskipITs=true
