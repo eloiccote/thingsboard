@@ -52,34 +52,17 @@ jobs:
           distribution: 'temurin'
           cache: "maven"
       
-      - name: Compile and Install Dependencies
-        run: >
-          mvn clean install 
-          -DskipTests 
-          -DskipITs 
-          -Dassembly.skipAssembly=true 
-          -Dcheckstyle.skip=true 
-          -Dlicense.skip=true 
-          -Ddockerfile.skip=true 
-          -Dmaven.javadoc.skip=true 
-          -Dmaven.source.skip=true 
-          -B 
-          -fae
-      
       - name: Run Unit Tests
-        run: >
-          mvn test 
-          -pl "application,common/message,common/data"
-          -Dtest="CustomMaintenanceControllerTest,
-          org.thingsboard.server.common.data.**,org.thingsboard.server.common.message.**,
-          !org.thingsboard.server.dao.**,!**/nosql/*Test.java,
-          !**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
-          -DskipITs=true 
-          -Dcheckstyle.skip=true 
-          -Dlicense.skip=true 
-          -Ddockerfile.skip=true
-          -Dsurefire.failIfNoSpecifiedTests=false
-          -B
+        run: |
+
+          export MAVEN_OPTS="-Xmx1024m" 
+          export SUREFIRE_JAVA_OPTS="-Xmx1536m -XX:+ExitOnOutOfMemoryError"
+          
+          mvn clean install -T 1C -DskipTests -DskipITs -Dcheckstyle.skip=true -Dlicense.skip=true -Ddockerfile.skip=true -pl "!msa/js-executor" -B
+
+          mvn test -pl application -Dtest="CustomMaintenanceControllerTest" -DfailIfNoTests=false -B
+          mvn test -pl='!application,!dao,!ui-ngx,!msa/js-executor,!msa/web-ui' -T 1C -B
+          mvn test -pl dao -Dparallel=packages -DforkCount=2 -B
 
       - name: Upload JAR File as Artifacts
         uses: actions/upload-artifact@v4
