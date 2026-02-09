@@ -107,10 +107,14 @@ jobs:
       
       - name: Build and Push Docker Image
         run: |
+
+          echo "FROM openjdk:17-jdk-slim" > Dockerfile
+          echo "COPY build-output/thingsboard-*.jar app.jar" >> Dockerfile
+          echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
+          
           IMAGE_TAG="${{ secrets.DOCKER_USERNAME }}/thingsboard-log8371:latest"
 
           docker build -t $IMAGE_TAG .
-
           docker push $IMAGE_TAG
 
           echo "Docker image pushed: $IMAGE_TAG"
