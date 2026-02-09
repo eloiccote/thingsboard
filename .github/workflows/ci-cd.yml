@@ -55,13 +55,16 @@ jobs:
       - name: Compile and Install Dependencies
         run: >
           mvn clean install 
-          -DskipTests=true 
-          -DskipITs=true 
+          -T 1C
+          -DskipTests 
+          -DskipITs 
           -Dassembly.skipAssembly=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true 
-          -B
+          -Dmaven.javadoc.skip=true 
+          -Dmaven.source.skip=true 
+          -B 
           -fae
       
       - name: Run Unit Tests
@@ -106,7 +109,7 @@ jobs:
         run: |
           IMAGE_TAG="${{ secrets.DOCKER_USERNAME }}/thingsboard-log8371:latest"
 
-          docker build -t $IMAGE_TAG
+          docker build -t $IMAGE_TAG .
 
           docker push $IMAGE_TAG
 
