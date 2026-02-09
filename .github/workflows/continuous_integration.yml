@@ -70,10 +70,10 @@ jobs:
       
       - name: Run Unit Test with Maven
         run: >
-          mvn test
-          -pl "!ui-ngx,!dao,!rule-engine"
+          mvn test 
+          -pl "application,common/data,common/message,common/transport/mqtt,common/transport/http,common/transport/coap,common/util,common/stats,common/cluster-api,common/cache"
+          -am
           -DforkCount=1C
-          -DargLine="-Duser.language=en -Duser.country=US"
           -Dtest="!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*E2E*"
           -DskipITs=true 
           -Dsurefire.failIfNoSpecifiedTests=false
