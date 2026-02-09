@@ -73,8 +73,7 @@ jobs:
           mvn test
           -pl "!ui-ngx,!dao"
           -DforkCount=1C
-          -Duser.language=en 
-          -Duser.country=US
+          -DargLine="-Duser.language=en -Duser.country=US"
           -Dtest=!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*E2E*
           -DskipITs=true
           -Dsurefire.failIfNoSpecifiedTests=false
