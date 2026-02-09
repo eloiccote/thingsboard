@@ -71,7 +71,7 @@ jobs:
           mvn test 
           -pl "application,common/message,common/data"
           -Dtest="
-          org.thingsboard.server.controller.**,org.thingsboard.server.service.**,org.thingsboard.server.edge.**,CustomMaintenanceControllerTest,
+          org.thingsboard.server.controller.**,org.thingsboard.server.service.**,org.thingsboard.server.edge.**,
           !org.thingsboard.server.dao.**,!**/nosql/*Test.java,
           !**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
           -DskipITs=true 
