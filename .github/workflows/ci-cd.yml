@@ -54,7 +54,6 @@ jobs:
       - name: Compile and Install Dependencies
         run: >
           mvn clean install 
-          -T 1C
           -DskipTests 
           -DskipITs 
           -Dassembly.skipAssembly=true 
