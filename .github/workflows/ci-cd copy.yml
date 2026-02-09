@@ -58,7 +58,7 @@ jobs:
           export MAVEN_OPTS="-Xmx1024m" 
           export SUREFIRE_JAVA_OPTS="-Xmx1536m -XX:+ExitOnOutOfMemoryError"
           
-          mvn clean install -T 1C -DskipTests -DskipITs -Dcheckstyle.skip=true -Dlicense.skip=true -Ddockerfile.skip=true -B
+          mvn clean install -T 1C -DskipTests -DskipITs -Dcheckstyle.skip=true -Dlicense.skip=true -Ddockerfile.skip=true -pl "!msa/js-executor" -B
 
           mvn test -pl application -Dtest="CustomMaintenanceControllerTest" -DfailIfNoTests=false -B
           mvn test -pl='!application,!dao,!ui-ngx,!msa/js-executor,!msa/web-ui' -T 1C -B
