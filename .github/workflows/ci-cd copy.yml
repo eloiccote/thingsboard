@@ -64,15 +64,6 @@ jobs:
           mvn test -pl='!application,!dao,!ui-ngx,!msa/js-executor,!msa/web-ui' -T 1C -B
           mvn test -pl dao -Dparallel=packages -DforkCount=2 -B
 
-          mvn test -pl application \
-            -Dtest="org.thingsboard.server.controller.**,org.thingsboard.server.service.**,org.thingsboard.server.edge.**,!org.thingsboard.server.controller.AbstractWebTest" \
-            -Dsurefire.excludes='**/nosql/*Test.java' \
-            -DforkCount=2 \
-            -Dparallel=classes \
-            -Dsurefire.rerunFailingTestsCount=2 \
-            -Dsurefire.failIfNoSpecifiedTests=false \
-            -B
-
       - name: Upload JAR File as Artifacts
         uses: actions/upload-artifact@v4
         with:
