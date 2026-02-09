@@ -70,15 +70,15 @@ jobs:
         run: >
           mvn test 
           -pl "application,common/message,common/data"
-          -Dtest="
-          CustomMaintenanceControllerTest,org.thingsboard.server.service.**,org.thingsboard.server.edge.**,
+          -Dtest="CustomMaintenanceControllerTest,
+          org.thingsboard.server.common.data.**,org.thingsboard.server.common.message.**,
           !org.thingsboard.server.dao.**,!**/nosql/*Test.java,
           !**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
           -DskipITs=true 
-          -Dsurefire.failIfNoSpecifiedTests=false
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true
+          -Dsurefire.failIfNoSpecifiedTests=false
           -B
 
       - name: Upload JAR File as Artifacts
