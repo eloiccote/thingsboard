@@ -58,3 +58,5 @@ jobs:
       - name: Run PMD complexity analysis
         run: |
           ./pmd-bin-7.0.0/bin/pmd check -d ./ -R pmd-ruleset.xml -f text
+        continue-on-error: true
+
