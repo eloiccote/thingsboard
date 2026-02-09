@@ -74,6 +74,7 @@ jobs:
           !org.thingsboard.server.dao.**,!**/nosql/*Test.java,
           !**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
           -DskipITs=true 
+          -Dsurefire.failIfNoSpecifiedTests=false
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
           -Ddockerfile.skip=true
