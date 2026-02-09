@@ -108,7 +108,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
 
-          echo "FROM openjdk:17-jdk-slim" > Dockerfile
+          echo "FROM amazoncorretto:17" > Dockerfile
           echo "COPY build-output/thingsboard-*.jar app.jar" >> Dockerfile
           echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
           
