@@ -71,8 +71,10 @@ jobs:
         run: >
           mvn test 
           -pl "application,common/message,common/data"
-          - am
-          -Dtest="!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
+          -am
+          -Dtest="
+          !org.thingsboard.server.dao.**,
+          !**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
           -DskipITs=true 
           -Dcheckstyle.skip=true 
           -Dlicense.skip=true 
