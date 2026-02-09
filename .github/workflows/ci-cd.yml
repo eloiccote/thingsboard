@@ -67,7 +67,7 @@ jobs:
       - name: Run Unit Tests
         run: >
           mvn test 
-          -pl "application,common/data"
+          -pl "common/message,common/data"
           -Dtest="!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*E2E*"
           -DskipITs=true 
           -Dcheckstyle.skip=true 
