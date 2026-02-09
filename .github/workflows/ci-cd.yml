@@ -110,6 +110,7 @@ jobs:
 
           echo "FROM amazoncorretto:17" > Dockerfile
           echo "COPY build-output/thingsboard-*-boot.jar app.jar" >> Dockerfile
+          echo "COPY application/src/main/data/install /install" >> Dockerfile
           echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
           
           IMAGE_TAG="${{ secrets.DOCKER_USERNAME }}/thingsboard-log8371:latest"
