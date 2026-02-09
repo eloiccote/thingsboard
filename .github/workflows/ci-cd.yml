@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: thingsboard-jar
-          path: application/target/thingsboard-*.jar
+          path: application/target/thingsboard-*-boot.jar
           retention-days: 1
   
   cd-docker-push:
@@ -109,7 +109,7 @@ jobs:
         run: |
 
           echo "FROM amazoncorretto:17" > Dockerfile
-          echo "COPY build-output/thingsboard-*.jar app.jar" >> Dockerfile
+          echo "COPY build-output/thingsboard-*-boot.jar app.jar" >> Dockerfile
           echo "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]" >> Dockerfile
           
           IMAGE_TAG="${{ secrets.DOCKER_USERNAME }}/thingsboard-log8371:latest"
