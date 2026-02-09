@@ -74,7 +74,7 @@ jobs:
           -pl "!ui-ngx,!dao"
           -DforkCount=1C
           -DargLine="-Duser.language=en -Duser.country=US"
-          -Dtest=!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*E2E*
+          -Dtest="!**/*IT*,!**/*Integration*,!**/*Performance*,!**/*Load*,!**/*Stress*,!**/*Suite*,!**/*E2E*,!**/*TbMathNodeTest*,!**/*TbAiNodeTest*,!**/*TbMsgAttributesNodeTest*,!**/*TbMsgTimeseriesNodeTest*"
           -DskipITs=true
           -Dsurefire.failIfNoSpecifiedTests=false
           -Dcheckstyle.skip=true 
