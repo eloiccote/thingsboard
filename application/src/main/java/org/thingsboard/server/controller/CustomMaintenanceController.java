@@ -39,7 +39,7 @@ public class CustomMaintenanceController{
         String dbStatus = "UNKNOWN";
         try (Connection connection = dataSource.getConnection()) {
             if (connection.isValid(1)) {
-                dbStatus = "cONNECTED";
+                dbStatus = "CONNECTED";
             } else {
                 dbStatus = "UNSTABLE";
             }
@@ -52,8 +52,8 @@ public class CustomMaintenanceController{
         long usedMemory = totalMemory - freeMemory;
 
         return String.format(
-            "{\"Component\": \"GlobalHealth}",
-            dbStatus, usedMemory, freeMemory, totalMemory
+            "{\"component\": \"GlobalHealth\", \"db_status\": \"%s\", \"memory_used_mb\": %d, \"memory_total_mb\": %d}",
+            dbStatus, usedMemory, totalMemory
         );
     }
 }

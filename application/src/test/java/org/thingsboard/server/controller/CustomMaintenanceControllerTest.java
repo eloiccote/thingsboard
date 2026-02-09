@@ -36,7 +36,7 @@ public class CustomMaintenanceControllerTest {
     public void testDatabaseUp() throws SQLException {
         when(mockConnection.isValid(1)).thenReturn(true);
 
-        String result = controller.getRealSystemStatus();
+        String result = controller.getMaintenanceStatus();
 
         System.out.println("Test UP Result: " + result);
         assertTrue("Doit indiquer CONNECTED", result.contains("CONNECTED"));
@@ -47,7 +47,7 @@ public class CustomMaintenanceControllerTest {
     public void testDatabaseDown() throws SQLException {
         when(mockDataSource.getConnection()).thenThrow(new SQLException("Connection timeout"));
 
-        String result = controller.getRealSystemStatus();
+        String result = controller.getMaintenanceStatus();
 
         System.out.println("Test DOWN Result: " + result);
         assertTrue("Doit indiquer DISCONNECTED", result.contains("DISCONNECTED"));
